@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Studio — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Manrope:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0A0E1A;
+      --bg2:       #111827;
+      --bg3:       #1C2333;
+      --border:    rgba(255,255,255,0.06);
+      --blue:      #3B82F6;
+      --blue-dark: #1D4ED8;
+      --green:     #10B981;
+      --red:       #EF4444;
+      --yellow:    #F59E0B;
+      --text:      #F1F5F9;
+      --text-muted:#64748B;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Manrope', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      position: relative; overflow: hidden;
+    }
+    #login-screen::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .login-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px;
+      width: 100%; max-width: 420px;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.5s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-logo-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--blue); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .login-logo span {
+      font-family: var(--mono);
+      font-weight: 700; font-size: 1.1rem;
+      color: var(--text);
+    }
+    .login-title {
+      font-size: 1.5rem; font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .login-sub {
+      color: var(--text-muted); font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block; font-size: 0.8rem;
+      font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%; padding: 12px 16px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text);
+      font-family: var(--mono); font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--blue); }
+    .form-input::placeholder { color: var(--text-muted); }
+    .btn {
+      width: 100%; padding: 13px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: var(--sans); font-weight: 700;
+      font-size: 0.95rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .error-msg {
+      color: var(--red); font-size: 0.85rem;
+      margin-top: 12px; text-align: center;
+      display: none;
+    }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display: none; }
+
+    .topbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .topbar-logo {
+      font-family: var(--mono);
+      font-weight: 700; font-size: 1rem;
+      color: var(--blue);
+    }
+    .topbar-badge {
+      background: rgba(16,185,129,0.1);
+      color: var(--green);
+      padding: 3px 10px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .logout-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-muted); padding: 7px 16px;
+      border-radius: 8px; cursor: pointer;
+      font-family: var(--sans); font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* Tabs */
+    .tabs {
+      display: flex; gap: 4px;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 8px 20px; border-radius: 8px;
+      border: none; background: transparent;
+      color: var(--text-muted); font-family: var(--sans);
+      font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab.active {
+      background: var(--blue);
+      color: #fff;
+    }
+    .tab:hover:not(.active) {
+      background: var(--bg3); color: var(--text);
+    }
+
+    .main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp 0.3s ease; }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(59,130,246,0.3); }
+    .stat-label {
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 10px;
+    }
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 2rem; font-weight: 700;
+      color: var(--text);
+    }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-value.green  { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red    { color: var(--red); }
+
+    /* Section */
+    .section-title {
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 16px; display: flex;
+      align-items: center; gap: 8px;
+    }
+    .badge {
+      background: rgba(239,68,68,0.15);
+      color: var(--red); padding: 2px 8px;
+      border-radius: 50px; font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge.green {
+      background: rgba(16,185,129,0.15);
+      color: var(--green);
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+    }
+    th {
+      background: var(--bg3);
+      padding: 12px 16px; text-align: left;
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    td {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .mono { font-family: var(--mono); font-size: 0.85rem; }
+
+    /* Status badges */
+    .status {
+      padding: 3px 10px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 700;
+      display: inline-block;
+    }
+    .status.en_attente { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .status.confirme   { background: rgba(16,185,129,0.15); color: var(--green); }
+    .status.refuse     { background: rgba(239,68,68,0.15);  color: var(--red); }
+    .status.disponible { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .status.attribue   { background: rgba(16,185,129,0.15); color: var(--green); }
+    .status.expire     { background: rgba(239,68,68,0.15);  color: var(--red); }
+
+    /* Action buttons */
+    .action-btn {
+      padding: 6px 14px; border-radius: 7px;
+      border: none; cursor: pointer;
+      font-family: var(--sans); font-weight: 600;
+      font-size: 0.8rem; transition: all 0.2s;
+      margin-right: 6px;
+    }
+    .action-btn.confirm {
+      background: rgba(16,185,129,0.15); color: var(--green);
+    }
+    .action-btn.confirm:hover { background: var(--green); color: #fff; }
+    .action-btn.refuse {
+      background: rgba(239,68,68,0.15); color: var(--red);
+    }
+    .action-btn.refuse:hover { background: var(--red); color: #fff; }
+
+    /* Form attribuer */
+    .attrib-form {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .attrib-form .form-group { margin-bottom: 0; }
+    .attrib-form .btn-submit {
+      grid-column: 1 / -1;
+      padding: 12px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: var(--sans); font-weight: 700;
+      font-size: 0.95rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .attrib-form .btn-submit:hover { background: var(--blue-dark); }
+
+    /* Codes filter */
+    .filter-row {
+      display: flex; gap: 8px; margin-bottom: 16px;
+    }
+    .filter-btn {
+      padding: 7px 16px; border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      font-family: var(--sans); font-weight: 600;
+      font-size: 0.85rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--blue); color: #fff; border-color: var(--blue);
+    }
+
+    /* Gen codes */
+    .gen-form {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      display: flex; gap: 16px; align-items: flex-end;
+      margin-bottom: 24px;
+    }
+    .gen-form .form-group { margin: 0; flex: 1; }
+    .gen-btn {
+      padding: 12px 24px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: var(--sans); font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .gen-btn:hover { background: var(--blue-dark); }
+
+    /* Generated codes list */
+    .codes-result {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      margin-top: 16px; display: none;
+    }
+    .codes-result h4 {
+      font-size: 0.85rem; color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .code-item {
+      font-family: var(--mono);
+      font-size: 0.9rem; padding: 8px 12px;
+      background: var(--bg2); border-radius: 8px;
+      margin-bottom: 6px; color: var(--green);
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+    .copy-btn {
+      background: transparent; border: none;
+      color: var(--text-muted); cursor: pointer;
+      font-size: 0.8rem; padding: 2px 8px;
+      border-radius: 4px; transition: all 0.2s;
+    }
+    .copy-btn:hover { color: var(--blue); }
+
+    .empty-state {
+      text-align: center; padding: 48px;
+      color: var(--text-muted); font-size: 0.95rem;
+    }
+    .empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
+
+    .loading {
+      text-align: center; padding: 32px;
+      color: var(--text-muted);
+    }
+
+    .success-toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--green); color: #fff;
+      padding: 12px 20px; border-radius: 10px;
+      font-weight: 600; font-size: 0.9rem;
+      display: none; z-index: 999;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .topbar { padding: 12px 16px; }
+      .tabs { padding: 12px 16px; }
+      .attrib-form { grid-template-columns: 1fr; }
+      .gen-form { flex-direction: column; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">⚡</div>
+      <span>QR Studio Admin</span>
+    </div>
+    <div class="login-title">Connexion</div>
+    <div class="login-sub">Accès réservé à l'administrateur</div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" class="form-input" id="password-input"
+             placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn" id="login-btn" onclick="login()">Se connecter</button>
+    <div class="error-msg" id="login-error">❌ Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">⚡ QR Studio</span>
+      <span class="topbar-badge">● En ligne</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('overview')">📊 Dashboard</button>
+    <button class="tab" onclick="showPage('paiements')">💰 Paiements</button>
+    <button class="tab" onclick="showPage('codes')">🔑 Codes</button>
+    <button class="tab" onclick="showPage('clients')">👥 Clients</button>
+    <button class="tab" onclick="showPage('attribuer')">➕ Attribuer</button>
+  </div>
+
+  <div class="main">
+
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading">Chargement...</div>
+      </div>
+      <div class="section-title">
+        💰 Paiements en attente
+        <span class="badge" id="attente-count">0</span>
+      </div>
+      <div id="paiements-attente-list"></div>
+    </div>
+
+    <!-- PAIEMENTS -->
+    <div class="page" id="page-paiements">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterPaiements('', this)">Tous</button>
+        <button class="filter-btn" onclick="filterPaiements('en_attente', this)">En attente</button>
+        <button class="filter-btn" onclick="filterPaiements('confirme', this)">Confirmés</button>
+        <button class="filter-btn" onclick="filterPaiements('refuse', this)">Refusés</button>
+      </div>
+      <div id="paiements-list"></div>
+    </div>
+
+    <!-- CODES -->
+    <div class="page" id="page-codes">
+      <div class="gen-form">
+        <div class="form-group">
+          <label class="form-label">Quantité à générer</label>
+          <input type="number" class="form-input" id="gen-qty" value="10" min="1" max="100"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Série</label>
+          <input type="text" class="form-input" id="gen-serie" value="2026"/>
+        </div>
+        <button class="gen-btn" onclick="genererCodes()">⚡ Générer</button>
+      </div>
+      <div class="codes-result" id="codes-result"></div>
+
+      <div class="filter-row" style="margin-top:24px;">
+        <button class="filter-btn active" onclick="filterCodes('', this)">Tous</button>
+        <button class="filter-btn" onclick="filterCodes('disponible', this)">Disponibles</button>
+        <button class="filter-btn" onclick="filterCodes('attribue', this)">Attribués</button>
+        <button class="filter-btn" onclick="filterCodes('expire', this)">Expirés</button>
+      </div>
+      <div id="codes-list"></div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="page" id="page-clients">
+      <div id="clients-list"></div>
+    </div>
+
+    <!-- ATTRIBUER -->
+    <div class="page" id="page-attribuer">
+      <div class="section-title">➕ Attribuer un code manuellement</div>
+      <div class="attrib-form">
+        <div class="form-group">
+          <label class="form-label">Téléphone *</label>
+          <input type="text" class="form-input" id="att-tel" placeholder="+224 XXX XXX XXX"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="att-nom" placeholder="Nom du client"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (optionnel)</label>
+          <input type="email" class="form-input" id="att-email" placeholder="email@exemple.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" id="att-notes" placeholder="Référence Orange Money..."/>
+        </div>
+        <button class="btn-submit" onclick="attribuerCode()">🔑 Attribuer un code</button>
+      </div>
+      <div id="attrib-result"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="success-toast" id="toast"></div>
+
+<script>
+  const API = 'https://qr-std-backend.onrender.com';
+  let token = localStorage.getItem('admin_token') || '';
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  async function login() {
+    const pwd = document.getElementById('password-input').value;
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+
+    try {
+      const res = await fetch(`${API}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      });
+      const data = await res.json();
+      if (data.success) {
+        token = data.token;
+        localStorage.setItem('admin_token', token);
+        showDashboard();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    } catch (e) {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-error').textContent = '❌ Erreur de connexion au serveur';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  }
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    token = '';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  async function api(path, method = 'GET', body = null) {
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API}${path}`, opts);
+    if (res.status === 401 || res.status === 403) { logout(); return null; }
+    return res.json();
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadOverview();
+  }
+
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    event.target.classList.add('active');
+
+    if (name === 'overview')   loadOverview();
+    if (name === 'paiements')  loadPaiements('');
+    if (name === 'codes')      loadCodes('');
+    if (name === 'clients')    loadClients();
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  // ── Overview ──────────────────────────────────────────────────────────────
+  async function loadOverview() {
+    const data = await api('/admin/dashboard');
+    if (!data) return;
+
+    const s = data.stats;
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">Clients</div>
+        <div class="stat-value blue">${s.totalClients}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Codes disponibles</div>
+        <div class="stat-value green">${s.codesDisponibles}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Codes attribués</div>
+        <div class="stat-value">${s.codesAttribues}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En attente</div>
+        <div class="stat-value yellow">${s.paiementsEnAttente}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Confirmés</div>
+        <div class="stat-value green">${s.paiementsConfirmes}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenu total</div>
+        <div class="stat-value blue">${s.revenuTotal.toLocaleString()} GNF</div>
+      </div>
+    `;
+
+    document.getElementById('attente-count').textContent = s.paiementsEnAttente;
+
+    // Paiements en attente
+    const pData = await api('/admin/paiements?statut=en_attente');
+    if (pData?.paiements?.length === 0) {
+      document.getElementById('paiements-attente-list').innerHTML =
+        '<div class="empty-state"><div class="icon">✅</div>Aucun paiement en attente</div>';
+    } else {
+      document.getElementById('paiements-attente-list').innerHTML = renderPaiementsTable(pData?.paiements || []);
+    }
+  }
+
+  // ── Paiements ─────────────────────────────────────────────────────────────
+  async function loadPaiements(statut) {
+    document.getElementById('paiements-list').innerHTML = '<div class="loading">Chargement...</div>';
+    const url = statut ? `/admin/paiements?statut=${statut}` : '/admin/paiements';
+    const data = await api(url);
+    if (!data) return;
+    document.getElementById('paiements-list').innerHTML =
+      data.paiements.length === 0
+        ? '<div class="empty-state"><div class="icon">📭</div>Aucun paiement trouvé</div>'
+        : renderPaiementsTable(data.paiements);
+  }
+
+  function filterPaiements(statut, btn) {
+    document.querySelectorAll('#page-paiements .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadPaiements(statut);
+  }
+
+  function renderPaiementsTable(paiements) {
+    return `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Téléphone</th>
+              <th>Nom</th>
+              <th>Montant</th>
+              <th>Référence OM</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${paiements.map(p => `
+              <tr>
+                <td class="mono">${p.telephone}</td>
+                <td>${p.nom || '—'}</td>
+                <td class="mono">${p.montant?.toLocaleString()} GNF</td>
+                <td class="mono">${p.referenceOrangeMoney || '—'}</td>
+                <td>${formatDate(p.creeLe)}</td>
+                <td><span class="status ${p.statut}">${p.statut.replace('_', ' ')}</span></td>
+                <td>
+                  ${p.statut === 'en_attente' ? `
+                    <button class="action-btn confirm" onclick="confirmerPaiement('${p._id}')">✓ Confirmer</button>
+                    <button class="action-btn refuse"  onclick="refuserPaiement('${p._id}')">✕ Refuser</button>
+                  ` : p.codeAttribue ? `<span class="mono" style="color:var(--green);font-size:0.8rem">${p.codeAttribue}</span>` : '—'}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function confirmerPaiement(id) {
+    if (!confirm('Confirmer ce paiement et attribuer un code ?')) return;
+    const data = await api(`/admin/paiements/${id}/confirmer`, 'POST');
+    if (data?.success) {
+      toast(`✅ Code attribué : ${data.code}`);
+      loadOverview();
+      loadPaiements('');
+    } else {
+      alert('❌ ' + (data?.message || 'Erreur'));
+    }
+  }
+
+  async function refuserPaiement(id) {
+    if (!confirm('Refuser ce paiement ?')) return;
+    const data = await api(`/admin/paiements/${id}/refuser`, 'POST');
+    if (data?.success) {
+      toast('🚫 Paiement refusé');
+      loadOverview();
+      loadPaiements('');
+    }
+  }
+
+  // ── Codes ─────────────────────────────────────────────────────────────────
+  async function loadCodes(statut) {
+    document.getElementById('codes-list').innerHTML = '<div class="loading">Chargement...</div>';
+    const url = statut ? `/admin/codes?statut=${statut}` : '/admin/codes';
+    const data = await api(url);
+    if (!data) return;
+
+    document.getElementById('codes-list').innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Série</th>
+              <th>Statut</th>
+              <th>Client</th>
+              <th>Attribué le</th>
+              <th>Expire le</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.codes.map(c => `
+              <tr>
+                <td class="mono" style="color:var(--blue)">${c.code}</td>
+                <td>${c.serie}</td>
+                <td><span class="status ${c.statut}">${c.statut}</span></td>
+                <td class="mono">${c.clientTelephone || '—'}</td>
+                <td>${formatDate(c.attribueLe)}</td>
+                <td>${formatDate(c.expireLe)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function filterCodes(statut, btn) {
+    document.querySelectorAll('#page-codes .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadCodes(statut);
+  }
+
+  async function genererCodes() {
+    const quantite = parseInt(document.getElementById('gen-qty').value);
+    const serie    = document.getElementById('gen-serie').value;
+    const data     = await api('/admin/codes/generer', 'POST', { quantite, serie });
+    if (!data?.success) { alert('Erreur lors de la génération'); return; }
+
+    const result = document.getElementById('codes-result');
+    result.style.display = 'block';
+    result.innerHTML = `
+      <h4>✅ ${data.codes.length} codes générés</h4>
+      ${data.codes.map(c => `
+        <div class="code-item">
+          <span>${c}</span>
+          <button class="copy-btn" onclick="copyCode('${c}', this)">Copier</button>
+        </div>
+      `).join('')}
+    `;
+    loadCodes('');
+  }
+
+  function copyCode(code, btn) {
+    navigator.clipboard.writeText(code);
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = 'Copier', 1500);
+  }
+
+  // ── Clients ───────────────────────────────────────────────────────────────
+  async function loadClients() {
+    document.getElementById('clients-list').innerHTML = '<div class="loading">Chargement...</div>';
+    const data = await api('/admin/clients');
+    if (!data) return;
+
+    document.getElementById('clients-list').innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Téléphone</th>
+              <th>Nom</th>
+              <th>Codes</th>
+              <th>Paiements</th>
+              <th>Inscrit le</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.clients.length === 0
+              ? '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Aucun client</td></tr>'
+              : data.clients.map(c => `
+                <tr>
+                  <td class="mono">${c.telephone}</td>
+                  <td>${c.nom}</td>
+                  <td><span class="badge green">${c.codes?.length || 0}</span></td>
+                  <td>${c.paiements?.length || 0}</td>
+                  <td>${formatDate(c.creeLe)}</td>
+                </tr>
+              `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ── Attribuer ─────────────────────────────────────────────────────────────
+  async function attribuerCode() {
+    const telephone = document.getElementById('att-tel').value.trim();
+    const nom       = document.getElementById('att-nom').value.trim();
+    const email     = document.getElementById('att-email').value.trim();
+    const notes     = document.getElementById('att-notes').value.trim();
+
+    if (!telephone) { alert('Le téléphone est requis'); return; }
+
+    const data = await api('/admin/codes/attribuer', 'POST', { telephone, nom, email, notes });
+    const result = document.getElementById('attrib-result');
+
+    if (data?.success) {
+      const expire = new Date(data.expireLe).toLocaleDateString('fr-FR');
+      result.innerHTML = `
+        <div style="background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:12px;padding:20px;margin-top:16px;">
+          <div style="color:var(--green);font-weight:700;margin-bottom:8px;">✅ Code attribué avec succès</div>
+          <div class="mono" style="font-size:1.2rem;color:var(--text);margin-bottom:8px;">${data.code}</div>
+          <div style="color:var(--text-muted);font-size:0.85rem;">Expire le : ${expire}</div>
+          <button class="copy-btn" style="margin-top:10px;background:var(--bg3);padding:6px 14px;border-radius:8px;"
+            onclick="copyCode('${data.code}', this)">📋 Copier le code</button>
+        </div>
+      `;
+      toast(`✅ Code attribué à ${telephone}`);
+      // Reset form
+      ['att-tel','att-nom','att-email','att-notes'].forEach(id => document.getElementById(id).value = '');
+    } else {
+      result.innerHTML = `<div style="color:var(--red);margin-top:12px;">❌ ${data?.message || 'Erreur'}</div>`;
+    }
+  }
+
+  // ── Enter key login ───────────────────────────────────────────────────────
+  document.getElementById('password-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  // ── Auto-login si token existant ──────────────────────────────────────────
+  if (token) showDashboard();
+</script>
+</body>
+</html>

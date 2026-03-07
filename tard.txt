@@ -1,0 +1,13 @@
+Key store path :
+C:\Users\Ezzy beos\Desktop\qrstudio.jks
+Password : choisis un mot de passe fort ex: QrStudio2026!
+Confirm : répète le même
+Key alias : qrstudio
+Key password : même mot de passe QrStudio2026!
+Validity (years) : 25
+Certificate - First and Last Name : Beoscomp
+Organizational Unit : Mobile
+Organization : Beoscomp
+City : Conakry
+State : Conakry
+Country Code : GN

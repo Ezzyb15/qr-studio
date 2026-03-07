@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Studio — Générez & Scannez vos QR Codes</title>
+  <meta name="description" content="QR Studio est l'application Android gratuite pour générer et scanner des QR codes. Disponible sur APKPure."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --blue-deep:   #0D47A1;
+      --blue-mid:    #1565C0;
+      --blue-bright: #1976D2;
+      --blue-light:  #42A5F5;
+      --blue-pale:   #E3F2FD;
+      --white:       #FFFFFF;
+      --gray-soft:   #F8FAFD;
+      --gray-mid:    #90A4AE;
+      --text-dark:   #0D1B2A;
+      --text-body:   #37474F;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(21,101,192,0.08);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.4rem;
+      color: var(--blue-mid);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo svg { width: 32px; height: 32px; }
+    .nav-cta {
+      background: var(--blue-mid); color: #fff;
+      padding: 10px 24px; border-radius: 50px;
+      text-decoration: none; font-weight: 500;
+      font-size: 0.9rem; transition: all 0.2s;
+    }
+    .nav-cta:hover { background: var(--blue-deep); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 120px 48px 80px;
+      position: relative;
+      background: linear-gradient(135deg, #FFFFFF 0%, #E3F2FD 50%, #BBDEFB 100%);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(21,101,192,0.08) 0%, transparent 70%);
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+      max-width: 1100px; width: 100%;
+      position: relative; z-index: 1;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--blue-pale); color: var(--blue-mid);
+      padding: 6px 14px; border-radius: 50px;
+      font-size: 0.8rem; font-weight: 500;
+      margin-bottom: 20px;
+      border: 1px solid rgba(21,101,192,0.2);
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800; line-height: 1.1;
+      color: var(--text-dark); margin-bottom: 20px;
+    }
+    h1 em { font-style: normal; color: var(--blue-mid); }
+    .hero-sub {
+      font-size: 1.1rem; color: var(--text-body);
+      line-height: 1.7; margin-bottom: 36px;
+      font-weight: 300;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--blue-mid); color: #fff;
+      padding: 14px 28px; border-radius: 14px;
+      text-decoration: none; font-weight: 500;
+      font-size: 1rem; transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(21,101,192,0.3);
+    }
+    .btn-primary:hover { background: var(--blue-deep); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(21,101,192,0.4); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--blue-mid);
+      padding: 14px 28px; border-radius: 14px;
+      text-decoration: none; font-weight: 500;
+      font-size: 1rem; border: 2px solid var(--blue-mid);
+      transition: all 0.25s;
+    }
+    .btn-secondary:hover { background: var(--blue-pale); }
+
+    /* Phone mockup */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+    }
+    .phone-wrap {
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+    .phone {
+      width: 240px; height: 480px;
+      background: var(--white);
+      border-radius: 36px;
+      box-shadow: 0 32px 80px rgba(13,71,161,0.2), 0 8px 24px rgba(13,71,161,0.1);
+      border: 6px solid #ECEFF1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; padding: 24px;
+      position: relative; overflow: hidden;
+    }
+    .phone::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 80px; height: 6px;
+      background: #CFD8DC; border-radius: 0 0 6px 6px;
+    }
+    .phone-qr {
+      width: 140px; height: 140px;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(21,101,192,0.15);
+    }
+    .phone-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 1rem;
+      color: var(--text-dark);
+    }
+    .phone-pill {
+      background: var(--blue-pale); color: var(--blue-mid);
+      padding: 6px 16px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 500;
+    }
+    .phone-btn {
+      width: 100%; background: var(--blue-mid); color: #fff;
+      padding: 10px; border-radius: 10px;
+      font-size: 0.8rem; font-weight: 500; text-align: center;
+    }
+
+    /* Floating badges */
+    .badge-float {
+      position: absolute;
+      background: #fff; border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      font-size: 0.8rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-dark);
+      animation: float 4s ease-in-out infinite;
+    }
+    .badge-float:nth-child(2) { animation-delay: -1s; top: 10%; right: -20px; }
+    .badge-float:nth-child(3) { animation-delay: -2s; bottom: 15%; left: -30px; }
+    .badge-float .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 100px 48px;
+      background: var(--gray-soft);
+    }
+    .section-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--blue-mid); margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 800; margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--text-body); font-size: 1.05rem;
+      max-width: 500px; line-height: 1.7;
+    }
+    .features-header { text-align: center; margin-bottom: 60px; }
+    .features-header .section-sub { margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .feature-card {
+      background: #fff; border-radius: 20px;
+      padding: 32px 28px;
+      border: 1px solid rgba(21,101,192,0.08);
+      transition: all 0.3s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(21,101,192,0.1);
+      border-color: rgba(21,101,192,0.2);
+    }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--blue-pale);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 1.4rem;
+    }
+    .feature-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .feature-card p { color: var(--text-body); font-size: 0.95rem; line-height: 1.6; }
+
+    /* ── PREMIUM ── */
+    .premium {
+      padding: 100px 48px;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-mid) 100%);
+      position: relative; overflow: hidden;
+    }
+    .premium::before {
+      content: '';
+      position: absolute; top: -50%; right: -10%;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .premium-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .premium h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 800; color: #fff; margin-bottom: 16px;
+    }
+    .premium p { color: rgba(255,255,255,0.75); font-size: 1.05rem; line-height: 1.7; margin-bottom: 32px; }
+    .premium-features { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .premium-features li {
+      display: flex; align-items: center; gap: 12px;
+      color: rgba(255,255,255,0.9); font-size: 1rem;
+    }
+    .premium-features li::before {
+      content: '✓';
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; flex-shrink: 0;
+      text-align: center; line-height: 24px;
+    }
+    .premium-price {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 24px; padding: 40px;
+      text-align: center;
+    }
+    .price-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 3.5rem; font-weight: 800; color: #fff;
+    }
+    .price-period { color: rgba(255,255,255,0.6); font-size: 0.95rem; margin-bottom: 24px; }
+    .btn-white {
+      display: inline-block; width: 100%;
+      background: #fff; color: var(--blue-mid);
+      padding: 14px 28px; border-radius: 14px;
+      text-decoration: none; font-weight: 700;
+      font-size: 1rem; transition: all 0.25s;
+      text-align: center;
+    }
+    .btn-white:hover { background: var(--blue-pale); transform: translateY(-2px); }
+    .price-note { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 12px; }
+
+    /* ── DOWNLOAD ── */
+    .download {
+      padding: 100px 48px;
+      text-align: center;
+      background: var(--white);
+    }
+    .download-inner { max-width: 600px; margin: 0 auto; }
+    .download h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 800; margin-bottom: 16px;
+    }
+    .download p { color: var(--text-body); font-size: 1.05rem; line-height: 1.7; margin-bottom: 36px; }
+    .apkpure-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--text-dark); color: #fff;
+      padding: 16px 32px; border-radius: 16px;
+      text-decoration: none; font-weight: 600; font-size: 1rem;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .apkpure-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+    .apkpure-btn svg { width: 28px; height: 28px; }
+
+    /* ── PRIVACY ── */
+    .privacy {
+      padding: 80px 48px;
+      background: var(--gray-soft);
+      max-width: 800px; margin: 0 auto;
+    }
+    .privacy h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem; font-weight: 800; margin-bottom: 24px;
+    }
+    .privacy h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      margin: 24px 0 10px; color: var(--blue-mid);
+    }
+    .privacy p, .privacy li {
+      color: var(--text-body); line-height: 1.8; font-size: 0.95rem;
+    }
+    .privacy ul { padding-left: 20px; margin: 8px 0; }
+    .privacy section { background: #fff; border-radius: 20px; padding: 40px; margin-bottom: 24px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--text-dark); color: rgba(255,255,255,0.6);
+      padding: 40px 48px; text-align: center;
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--blue-light); text-decoration: none; }
+    footer strong { color: #fff; font-family: 'Syne', sans-serif; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .hero { padding: 100px 20px 60px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { display: none; }
+      .features { padding: 60px 20px; }
+      .premium { padding: 60px 20px; }
+      .premium-inner { grid-template-columns: 1fr; gap: 40px; }
+      .download { padding: 60px 20px; }
+      .privacy { padding: 40px 20px; }
+      footer { padding: 30px 20px; }
+    }
+
+    /* Fade in animation */
+    .fade-in {
+      opacity: 0; transform: translateY(20px);
+      animation: fadeIn 0.7s ease forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in:nth-child(2) { animation-delay: 0.1s; }
+    .fade-in:nth-child(3) { animation-delay: 0.2s; }
+    .fade-in:nth-child(4) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#E3F2FD"/>
+      <rect x="4" y="4" width="10" height="10" rx="2" stroke="#1565C0" stroke-width="2"/>
+      <rect x="6" y="6" width="6" height="6" rx="1" fill="#1565C0"/>
+      <rect x="18" y="4" width="10" height="10" rx="2" stroke="#1565C0" stroke-width="2"/>
+      <rect x="20" y="6" width="6" height="6" rx="1" fill="#1565C0"/>
+      <rect x="4" y="18" width="10" height="10" rx="2" stroke="#1565C0" stroke-width="2"/>
+      <rect x="6" y="20" width="6" height="6" rx="1" fill="#1565C0"/>
+      <rect x="18" y="18" width="4" height="4" rx="1" fill="#1976D2"/>
+      <rect x="24" y="18" width="4" height="4" rx="1" fill="#1976D2"/>
+      <rect x="18" y="24" width="4" height="4" rx="1" fill="#1976D2"/>
+      <rect x="24" y="24" width="4" height="4" rx="1" fill="#1565C0"/>
+    </svg>
+    QR Studio
+  </div>
+  <a href="https://apkpure.com/qr-studio/com.beoscomp.qrstudio" class="nav-cta">Télécharger</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-badge fade-in"><span></span> Disponible sur APKPure</div>
+      <h1 class="fade-in">Générez & Scannez vos <em>QR Codes</em> en un instant</h1>
+      <p class="hero-sub fade-in">QR Studio est l'application Android la plus simple pour créer des QR codes personnalisés et les scanner avec votre caméra. Gratuit, rapide et sans inscription.</p>
+      <div class="hero-actions fade-in">
+        <a href="https://apkpure.com/qr-studio/com.beoscomp.qrstudio" class="btn-primary">
+          ⬇️ Télécharger gratuitement
+        </a>
+        <a href="#features" class="btn-secondary">Voir les fonctionnalités</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-wrap">
+        <!-- Badge flottant 1 -->
+        <div class="badge-float">
+          <div class="dot" style="background:#4CAF50"></div>
+          QR généré !
+        </div>
+        <!-- Badge flottant 2 -->
+        <div class="badge-float">
+          <div class="dot" style="background:#2196F3"></div>
+          Scan réussi ✓
+        </div>
+
+        <div class="phone">
+          <!-- QR code SVG inline -->
+          <svg class="phone-qr" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="white"/>
+            <rect x="8" y="8" width="26" height="26" rx="4" stroke="#1565C0" stroke-width="3"/>
+            <rect x="13" y="13" width="16" height="16" rx="2" fill="#1565C0"/>
+            <rect x="66" y="8" width="26" height="26" rx="4" stroke="#1565C0" stroke-width="3"/>
+            <rect x="71" y="13" width="16" height="16" rx="2" fill="#1565C0"/>
+            <rect x="8" y="66" width="26" height="26" rx="4" stroke="#1565C0" stroke-width="3"/>
+            <rect x="13" y="71" width="16" height="16" rx="2" fill="#1565C0"/>
+            <rect x="42" y="8" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="42" y="20" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="8" y="42" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="20" y="42" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="42" y="42" width="8" height="8" rx="1" fill="#1565C0"/>
+            <rect x="54" y="42" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="66" y="42" width="8" height="8" rx="1" fill="#1565C0"/>
+            <rect x="78" y="42" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="42" y="54" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="54" y="54" width="8" height="8" rx="1" fill="#1565C0"/>
+            <rect x="42" y="66" width="8" height="8" rx="1" fill="#1565C0"/>
+            <rect x="66" y="66" width="8" height="8" rx="1" fill="#1976D2"/>
+            <rect x="54" y="78" width="8" height="8" rx="1" fill="#1565C0"/>
+            <rect x="78" y="78" width="8" height="8" rx="1" fill="#1976D2"/>
+          </svg>
+          <div class="phone-title">QR Studio</div>
+          <div class="phone-pill">✨ Version Pro disponible</div>
+          <div class="phone-btn">Générer un QR Code</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="features-header">
+      <div class="section-label">Fonctionnalités</div>
+      <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+      <p class="section-sub">Simple, puissant et gratuit. QR Studio couvre tous vos besoins de QR codes au quotidien.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Générateur QR</h3>
+        <p>Créez des QR codes pour URLs, textes, contacts et plus encore en quelques secondes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Scanner caméra</h3>
+        <p>Scannez n'importe quel QR code avec votre caméra. Détection rapide et précise.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🖼️</div>
+        <h3>Scanner depuis galerie</h3>
+        <p>Importez une image depuis votre galerie pour en extraire le contenu du QR code.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Historique des scans</h3>
+        <p>Retrouvez tous vos QR codes scannés avec date et heure. Copiez ou ouvrez en un tap.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>Export PNG</h3>
+        <p>Téléchargez vos QR codes en haute résolution directement dans votre galerie.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Design Pro</h3>
+        <p>Personnalisez couleurs et ajoutez votre logo avec la version Premium.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREMIUM -->
+<section class="premium" id="premium">
+  <div class="premium-inner">
+    <div>
+      <div class="section-label" style="color:rgba(255,255,255,0.6)">Version Pro</div>
+      <h2>Débloquez tout le potentiel de QR Studio</h2>
+      <p>Passez au niveau supérieur avec des fonctionnalités exclusives pour créer des QR codes vraiment uniques.</p>
+      <ul class="premium-features">
+        <li>Couleurs personnalisées (fond & modules)</li>
+        <li>Ajout de votre logo au centre du QR</li>
+        <li>Sans publicités</li>
+        <li>Export haute qualité 1000×1000px</li>
+        <li>Support prioritaire</li>
+      </ul>
+    </div>
+    <div class="premium-price">
+      <div style="color:rgba(255,255,255,0.6); font-size:0.9rem; margin-bottom:8px;">Abonnement mensuel</div>
+      <div class="price-amount">4,99€</div>
+      <div class="price-period">par mois · résiliable à tout moment</div>
+      <a href="https://apkpure.com/qr-studio/com.beoscomp.qrstudio" class="btn-white">
+        Essayer gratuitement d'abord
+      </a>
+      <div class="price-note">Téléchargement gratuit · Premium disponible dans l'app</div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="download" id="download">
+  <div class="download-inner">
+    <div class="section-label">Téléchargement</div>
+    <h2>Disponible maintenant sur APKPure</h2>
+    <p>Téléchargez QR Studio gratuitement. Compatible Android 7.0 et versions supérieures.</p>
+    <a href="https://apkpure.com/qr-studio/com.beoscomp.qrstudio" class="apkpure-btn">
+      <svg viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="6" fill="#3DDC84"/>
+        <path d="M14 6v12M9 13l5 5 5-5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7 22h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      Télécharger sur APKPure
+    </a>
+  </div>
+</section>
+
+<!-- PRIVACY POLICY -->
+<div style="background:var(--gray-soft); padding: 0 48px;">
+  <div class="privacy" id="privacy">
+    <section>
+      <h2>Politique de Confidentialité</h2>
+      <p>Dernière mise à jour : Mars 2026</p>
+
+      <h3>1. Collecte de données</h3>
+      <p>QR Studio collecte uniquement les données nécessaires au fonctionnement de l'application :</p>
+      <ul>
+        <li>Contenu des QR codes générés (stocké localement sur votre appareil)</li>
+        <li>Historique des QR codes scannés (stocké localement sur votre appareil)</li>
+      </ul>
+
+      <h3>2. Données publicitaires</h3>
+      <p>La version gratuite de QR Studio affiche des publicités via AppLovin MAX. AppLovin peut collecter des identifiants publicitaires anonymes pour personnaliser les annonces. Consultez la <a href="https://www.applovin.com/privacy/" style="color:var(--blue-mid)">politique de confidentialité d'AppLovin</a> pour plus d'informations.</p>
+
+      <h3>3. Permissions utilisées</h3>
+      <ul>
+        <li><strong>Caméra</strong> : Pour scanner les QR codes</li>
+        <li><strong>Stockage</strong> : Pour sauvegarder les QR codes dans la galerie</li>
+        <li><strong>Internet</strong> : Pour afficher les publicités (version gratuite)</li>
+      </ul>
+
+      <h3>4. Partage de données</h3>
+      <p>Nous ne vendons, n'échangeons et ne transférons pas vos données personnelles à des tiers, à l'exception des partenaires publicitaires mentionnés ci-dessus.</p>
+
+      <h3>5. Sécurité</h3>
+      <p>Toutes les données générées par l'application sont stockées localement sur votre appareil et ne sont pas transmises à nos serveurs.</p>
+
+      <h3>6. Contact</h3>
+      <p>Pour toute question concernant cette politique de confidentialité, contactez-nous à : <a href="mailto:contact@beoscomp.com" style="color:var(--blue-mid)">contact@beoscomp.com</a></p>
+    </section>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p style="margin-bottom:12px">
+    <strong>QR Studio</strong> · Développé par Beoscomp
+  </p>
+  <p>
+    <a href="#privacy">Politique de confidentialité</a> ·
+    <a href="mailto:contact@beoscomp.com">Contact</a> ·
+    <a href="https://apkpure.com/qr-studio/com.beoscomp.qrstudio">APKPure</a>
+  </p>
+  <p style="margin-top:12px; font-size:0.8rem;">© 2026 Beoscomp. Tous droits réservés.</p>
+</footer>
+
+</body>
+</html>
